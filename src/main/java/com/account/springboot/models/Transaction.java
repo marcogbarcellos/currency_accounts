@@ -6,6 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Map;
 
@@ -23,6 +24,6 @@ public class Transaction {
     private CurrencyEnum serviceCurrency;
     private BigDecimal serviceFeeAmount;
     private TransactionTypeEnum type;
-    private Date createdAt;
+    private LocalDate createdAt;
 
 }

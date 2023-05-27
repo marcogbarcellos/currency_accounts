@@ -11,7 +11,6 @@ import java.time.ZoneId;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 
 @Service
 @Slf4j
@@ -25,21 +24,6 @@ public class RatesServiceImpl implements RatesService {
      */
     @Override
     public ConversionRateOutDto getConversionRate(ConversionRateInDto conversionRateInDto) {
-        Random random = new Random();
-//        Map<String, String> exchangeRates = new HashMap<>();
-//        exchangeRates.put("CADUSD", "0.73");
-//        exchangeRates.put("CADEUR", "0.68");
-//        exchangeRates.put("CADGBP", "0.6");
-//        exchangeRates.put("USDCAD", "1.36");
-//        exchangeRates.put("USDEUR", "0.93");
-//        exchangeRates.put("USDGBP", "0.81");
-//        exchangeRates.put("EURCAD", "1.46");
-//        exchangeRates.put("EURUSD", "1.07");
-//        exchangeRates.put("EURGBP", "0.87");
-//        exchangeRates.put("GBPCAD", "1.68");
-//        exchangeRates.put("GBPUSD", "1.23");
-//        exchangeRates.put("GBPEUR", "1.15");
-
         Map<String, String> exchangeRates = new HashMap<String,String>(
                 Map.of(
                         "CADUSD", "0.73",
@@ -51,9 +35,6 @@ public class RatesServiceImpl implements RatesService {
                 )
         );
         String rate = exchangeRates.get(conversionRateInDto.getSourceCurrency().toString()+conversionRateInDto.getTargetCurrency().toString());
-
-
-
         return ConversionRateOutDto
                 .builder()
                 .rate(rate)

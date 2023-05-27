@@ -1,10 +1,8 @@
 package com.account.springboot.services;
 
-import com.account.springboot.dto.AccountInDto;
-import com.account.springboot.dto.AccountOutDto;
-import com.account.springboot.dto.ConversionRateInDto;
-import com.account.springboot.dto.ConversionRateOutDto;
+import com.account.springboot.dto.*;
 import com.account.springboot.models.Account;
+import com.account.springboot.models.Balance;
 import com.account.springboot.models.CurrencyEnum;
 import com.account.springboot.models.Transaction;
 
@@ -20,11 +18,18 @@ public interface AccountService {
     AccountOutDto create(AccountInDto accountDto);
 
     /**
+     * Creates a new currency balance for a customer
+     * @param createBalanceDTO - dto with email and currency to open the account
+     * @return Account with all "zeroed" balances
+     */
+    AccountOutDto createBalance(CreateBalanceDTO createBalanceDTO);
+
+    /**
      * find account when provided an email
      * @param email - email (used as the id for that customer)
      * @return Account
      */
-    Account find(String email);
+    AccountOutDto find(String email);
 
     /**
      * send money to a customer through their email
@@ -34,7 +39,7 @@ public interface AccountService {
      * @param amount - the amount of money the customer will send
      * @return boolean
      */
-    boolean send(String fromEmail, String toEmail, CurrencyEnum currency, String amount);
+    Transaction send(SendDTO sendDTO);
 
     /**
      * send money to a customer through their email
@@ -44,7 +49,7 @@ public interface AccountService {
      * @param amount - the amount of money (in the source currency) the customer will exchange
      * @return boolean
      */
-    boolean swap(String email, CurrencyEnum sourceCurrency, CurrencyEnum targetCurrency, String amount);
+    Transaction swap(SwapDTO swapDTO);
 
     /**
      * gets all transactions given a customer email

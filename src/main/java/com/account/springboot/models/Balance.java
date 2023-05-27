@@ -6,8 +6,7 @@ import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.Map;
+import java.time.LocalDate;
 
 @Builder
 @Data
@@ -16,6 +15,7 @@ import java.util.Map;
 public class Balance {
     private CurrencyEnum currency;
     private BigDecimal amount;
-    private Date createdAt;
-    private Date updatedAt;
+    private BigDecimal yearlyInterestRate;
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
 }
