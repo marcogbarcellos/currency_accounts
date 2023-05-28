@@ -1,9 +1,6 @@
 package com.account.springboot.services;
 
 import com.account.springboot.dto.*;
-import com.account.springboot.models.Account;
-import com.account.springboot.models.Balance;
-import com.account.springboot.models.CurrencyEnum;
 import com.account.springboot.models.Transaction;
 
 import java.util.List;
@@ -18,11 +15,18 @@ public interface AccountService {
     AccountOutDto create(AccountInDto accountDto);
 
     /**
+     * Deposits into an account
+     * @param depositDto - dto with deposit information
+     * @return Account with all "zeroed" balances
+     */
+    AccountOutDto deposit(DepositDto depositDto);
+
+    /**
      * Creates a new currency balance for a customer
      * @param createBalanceDTO - dto with email and currency to open the account
      * @return Account with all "zeroed" balances
      */
-    AccountOutDto createBalance(CreateBalanceDTO createBalanceDTO);
+    AccountOutDto createBalance(CreateBalanceDto createBalanceDTO);
 
     /**
      * find account when provided an email
@@ -39,7 +43,7 @@ public interface AccountService {
      * @param amount - the amount of money the customer will send
      * @return boolean
      */
-    Transaction send(SendDTO sendDTO);
+    Transaction send(SendDto sendDTO);
 
     /**
      * send money to a customer through their email
@@ -49,7 +53,7 @@ public interface AccountService {
      * @param amount - the amount of money (in the source currency) the customer will exchange
      * @return boolean
      */
-    Transaction swap(SwapDTO swapDTO);
+    Transaction swap(SwapDto swapDTO);
 
     /**
      * gets all transactions given a customer email

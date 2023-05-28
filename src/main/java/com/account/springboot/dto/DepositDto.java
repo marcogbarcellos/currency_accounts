@@ -1,21 +1,26 @@
 package com.account.springboot.dto;
 
 import com.account.springboot.models.CurrencyEnum;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
-@ToString
-@Builder
 @Getter
 @Setter
+@ToString
+@NoArgsConstructor
 @AllArgsConstructor
-public class ConversionRateInDto {
+public class DepositDto {
 
     @NotEmpty
-    private CurrencyEnum sourceCurrency;
+    @Email
+    private String email;
 
     @NotEmpty
-    private CurrencyEnum targetCurrency;
+    private CurrencyEnum currency;
+
+    @NotEmpty
+    private String amount;
 
 
 }

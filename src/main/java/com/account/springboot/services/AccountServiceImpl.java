@@ -6,18 +6,14 @@ import com.account.springboot.exceptions.ErrorCode;
 import com.account.springboot.models.Account;
 import com.account.springboot.models.Transaction;
 import com.account.springboot.models.TransactionTypeEnum;
-import com.account.springboot.util.InterestRateCalculator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -27,6 +23,9 @@ public class AccountServiceImpl implements AccountService {
     @Autowired
     private RatesService ratesService;
 
+    @Autowired
+    private InMemoryService inMemoryService;
+
     // Service fee to be charged when the user is exchanging funds through its balances
     @Value("${service.fee}")
     private String SERVICE_FEE;
@@ -35,51 +34,47 @@ public class AccountServiceImpl implements AccountService {
     @Value("${yearly.interest}")
     private String YEARLY_INTEREST;
 
-    private InterestRateCalculator interestRateCalculator;
-
-    // In-memory variable to store accounts by email
-    private Map<String, Account> accounts = new ConcurrentHashMap<>();
-    private List<Transaction> transactions = new ArrayList<>();
-
     @Override
     public AccountOutDto create(AccountInDto accountDto) {
-        log.info("new Account DTO: {}", accountDto);
         Account newAccount = new Account(accountDto);
-        log.info("new Account: {}", newAccount);
-        accounts.put(newAccount.getEmail(), newAccount);
+        inMemoryService.addAccount(newAccount.getEmail(), newAccount);
         return newAccount.toDTO();
+
     }
 
     @Override
-    public AccountOutDto createBalance(CreateBalanceDTO createBalanceDTO) {
+    public AccountOutDto deposit(DepositDto depositDto) {
+        log.info("Deposit info: {}", depositDto);
+        Account account = inMemoryService.getAccount(depositDto.getEmail());
+        account.updateBalance(depositDto.getCurrency(), new BigDecimal(depositDto.getAmount()));
+        inMemoryService.upsertAccount(account.getEmail(), account);
+        return account.toDTO();
+    }
+
+    @Override
+    public AccountOutDto createBalance(CreateBalanceDto createBalanceDTO) {
         log.info("new Balance DTO: {}", createBalanceDTO);
-        if (!accounts.containsKey(createBalanceDTO.getEmail())) {
-            throw new CustomException(ErrorCode.NO_SUCH_ACCOUNT);
-        }
-        Account account = accounts.get(createBalanceDTO.getEmail());
+        Account account = inMemoryService.getAccount(createBalanceDTO.getEmail());
         log.info("found Account: {}", account);
+        if (account.getBalances().containsKey(createBalanceDTO.getCurrency())) {
+            throw new CustomException(ErrorCode.BALANCE_ALREADY_EXISTS);
+        }
         account.addBalance(createBalanceDTO.getCurrency(), new BigDecimal(YEARLY_INTEREST));
-        accounts.put(account.getEmail(), account);
+        inMemoryService.upsertAccount(account.getEmail(), account);
         return account.toDTO();
     }
 
 
     @Override
     public AccountOutDto find(String email) {
-        if (!accounts.containsKey(email)) {
-            throw new CustomException(ErrorCode.NO_SUCH_ACCOUNT);
-        }
-        Account account = accounts.get(email);
+        Account account = inMemoryService.getAccount(email);
         return account.toDTO();
     }
 
     @Override
-    public Transaction send(SendDTO sendDTO) {
-        if (!accounts.containsKey(sendDTO.getFromEmail()) || !accounts.containsKey(sendDTO.getToEmail())) {
-            throw new CustomException(ErrorCode.NO_SUCH_ACCOUNT);
-        }
-        Account sendingAccount = accounts.get(sendDTO.getFromEmail());
-        Account receivingAccount = accounts.get(sendDTO.getToEmail());
+    public Transaction send(SendDto sendDTO) {
+        Account sendingAccount = inMemoryService.getAccount(sendDTO.getFromEmail());
+        Account receivingAccount = inMemoryService.getAccount(sendDTO.getToEmail());
         log.info("sendingAccount: {}", sendingAccount);
         log.info("receivingAccount: {}", receivingAccount);
         log.info("sendDto: {}", sendDTO);
@@ -89,8 +84,8 @@ public class AccountServiceImpl implements AccountService {
         // increase balance from the customer that's receiving the funds
         receivingAccount.updateBalance(sendDTO.getCurrency(), bgAmount);
         // persisting changes to "in-memory" storage
-        accounts.put(sendDTO.getFromEmail(), sendingAccount);
-        accounts.put(sendDTO.getToEmail(), receivingAccount);
+        inMemoryService.upsertAccount(sendDTO.getFromEmail(), sendingAccount);
+        inMemoryService.upsertAccount(sendDTO.getToEmail(), receivingAccount);
         // creating a transaction and persisting it to the "in-memory" storage
         Transaction newTransaction = Transaction.builder()
                 .fromAccount(sendingAccount)
@@ -104,17 +99,14 @@ public class AccountServiceImpl implements AccountService {
                 .type(TransactionTypeEnum.TRANSFER)
                 .createdAt(LocalDate.now())
                 .build();
-        transactions.add(newTransaction);
+        inMemoryService.addTransaction(newTransaction);
 
         return newTransaction;
     }
 
     @Override
-    public Transaction swap(SwapDTO swapDTO) {
-        if (!accounts.containsKey(swapDTO.getEmail())) {
-            throw new CustomException(ErrorCode.NO_SUCH_ACCOUNT);
-        }
-        Account account = accounts.get(swapDTO.getEmail());
+    public Transaction swap(SwapDto swapDTO) {
+        Account account = inMemoryService.getAccount(swapDTO.getEmail());
         BigDecimal bgAmount = new BigDecimal(swapDTO.getAmount());
         // let's consider the service fee for "swaps" as a % defined on the constant SERVICE_FEE
         BigDecimal serviceFeePercentage = new BigDecimal(SERVICE_FEE);
@@ -138,7 +130,7 @@ public class AccountServiceImpl implements AccountService {
         // increase balance from the customer that's receiving the funds
         account.updateBalance(swapDTO.getTargetCurrency(), receivingAmount);
         // persisting changes to "in-memory" storage
-        accounts.put(swapDTO.getEmail(), account);
+        inMemoryService.upsertAccount(swapDTO.getEmail(), account);
         // creating a transaction and persisting it to the "in-memory" storage
         Transaction newTransaction = Transaction.builder()
                 .fromAccount(account)
@@ -152,51 +144,13 @@ public class AccountServiceImpl implements AccountService {
                 .type(TransactionTypeEnum.SWAP)
                 .createdAt(LocalDate.now())
                 .build();
-        transactions.add(newTransaction);
+        inMemoryService.addTransaction(newTransaction);
         return newTransaction;
     }
 
     @Override
     public List<Transaction> getTransactions(String email) {
-        log.info("accounts {}", accounts);
-        if (!accounts.containsKey(email)) {
-            throw new CustomException(ErrorCode.NO_SUCH_ACCOUNT);
-        }
-        List<Transaction> accountTransactions = transactions.stream()
-                .filter(tx -> tx.getFromAccount().getEmail().equals(email) || tx.getToAccount().getEmail().equals(email))
-                .collect(Collectors.toList());
-        return accountTransactions;
+        return inMemoryService.getTransactions(email);
     }
 
-//        @Scheduled(cron = "0 * * * * *") // Run every minute
-
-    @Scheduled(cron = "0 0 0 1 * *") // Run at midnight on the first day of each month
-    public void payoutInterestRates() {
-        log.info("Running interest rates job");
-        accounts.forEach((email, account) -> {
-            account.getBalances().forEach((currency, balance) -> {
-                log.info("payoutInterestRates balance: {}", balance);
-                // calculates the monthly interest rate to be paid considering
-                // if the account was created for more than a 1 month (full interest) or less (proportional to the days that were open over that month)
-                BigDecimal monthlyInterestRate = interestRateCalculator.getMonthlyInterest(balance.getCreatedAt(), balance.getYearlyInterestRate());
-                BigDecimal monthlyPayout = balance.getAmount().multiply(monthlyInterestRate);
-                account.updateBalance(currency, monthlyPayout);
-                Transaction newTransaction = Transaction.builder()
-                        .fromAccount(account)
-                        .toAccount(account)
-                        .fromCurrency(currency)
-                        .toCurrency(currency)
-                        .serviceCurrency(currency)
-                        .fromAmount(monthlyPayout)
-                        .toAmount(monthlyPayout)
-                        .serviceFeeAmount(new BigDecimal("0"))
-                        .type(TransactionTypeEnum.INTEREST_PAYOUT)
-                        .createdAt(LocalDate.now())
-                        .build();
-                accounts.put(account.getEmail(), account);
-                transactions.add(newTransaction);
-            });
-        });
-
-    }
 }

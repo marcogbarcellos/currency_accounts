@@ -10,12 +10,21 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class CreateBalanceDTO {
+public class SendDto {
 
     @NotEmpty
     @Email
-    private String email;
+    private String fromEmail;
+
+    @NotEmpty
+    @Email
+    private String toEmail;
 
     @NotEmpty
     private CurrencyEnum currency;
+
+    @NotEmpty
+    private String amount;
+
+
 }

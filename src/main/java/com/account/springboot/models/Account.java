@@ -2,17 +2,14 @@ package com.account.springboot.models;
 
 import com.account.springboot.dto.AccountInDto;
 import com.account.springboot.dto.AccountOutDto;
-import com.account.springboot.dto.CreateBalanceDTO;
 import com.account.springboot.exceptions.CustomException;
 import com.account.springboot.exceptions.ErrorCode;
-import lombok.Builder;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Date;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -52,7 +49,7 @@ public class Account {
         LocalDate now = LocalDate.now();
         balances.put(currency, Balance.builder()
                 .currency(currency)
-                .amount(new BigDecimal("10")) // starting balance with some value form testing purpose
+                .amount(new BigDecimal("0"))
                 .yearlyInterestRate(yearlyInterestRate) // considering the interest is 1.5% per year
                 .createdAt(now)
                 .updatedAt(now)

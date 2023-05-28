@@ -3,7 +3,6 @@ package com.account.springboot.controllers;
 import com.account.springboot.dto.*;
 import com.account.springboot.models.Transaction;
 import com.account.springboot.services.AccountService;
-import com.account.springboot.services.RatesService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,22 +26,29 @@ public class AccountController {
         return ResponseEntity.ok(out);
     }
 
+    @PostMapping("/deposit")
+    public ResponseEntity<AccountOutDto> createAccount(@RequestBody DepositDto depositDto) {
+        log.info("Depositing into account: {}", depositDto);
+        AccountOutDto out = accountService.deposit(depositDto);
+        return ResponseEntity.ok(out);
+    }
+
     @PostMapping("/send")
-    public ResponseEntity<Transaction> sendFunds(@RequestBody SendDTO sendDTO) {
+    public ResponseEntity<Transaction> sendFunds(@RequestBody SendDto sendDTO) {
         log.info("Sending money: {}", sendDTO);
         Transaction out = accountService.send(sendDTO);
         return ResponseEntity.ok(out);
     }
 
     @PostMapping("/swap")
-    public ResponseEntity<Transaction> swapFunds(@RequestBody SwapDTO swapDTO) {
+    public ResponseEntity<Transaction> swapFunds(@RequestBody SwapDto swapDTO) {
         log.info("Swapping funds: {}", swapDTO);
         Transaction out = accountService.swap(swapDTO);
         return ResponseEntity.ok(out);
     }
 
     @PostMapping("/create-balance")
-    public ResponseEntity<AccountOutDto> sendFunds(@RequestBody CreateBalanceDTO createBalanceDTO) {
+    public ResponseEntity<AccountOutDto> sendFunds(@RequestBody CreateBalanceDto createBalanceDTO) {
         log.info("Create balance: {}", createBalanceDTO);
         AccountOutDto out = accountService.createBalance(createBalanceDTO);
         return ResponseEntity.ok(out);

@@ -3,27 +3,24 @@ package com.account.springboot.dto;
 import com.account.springboot.models.CurrencyEnum;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-public class SendDTO {
+@AllArgsConstructor
+public class SwapDto {
 
     @NotEmpty
     @Email
-    private String fromEmail;
+    private String email;
 
     @NotEmpty
-    @Email
-    private String toEmail;
+    private CurrencyEnum sourceCurrency;
 
     @NotEmpty
-    private CurrencyEnum currency;
+    private CurrencyEnum targetCurrency;
 
     @NotEmpty
     private String amount;
