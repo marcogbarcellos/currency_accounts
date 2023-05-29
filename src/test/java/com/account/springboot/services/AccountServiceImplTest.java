@@ -132,14 +132,43 @@ class AccountServiceImplTest {
         List<Transaction> transactions = accountService.getTransactions(email);
 
         // Verifying the returned transactions
-        assertEquals(transactions.size(), 1);
-        assertEquals(transactions.get(0).getType(), TransactionTypeEnum.SWAP);
+        assertEquals(transactions.size(), 2);
+        assertEquals(transactions.get(0).getType(), TransactionTypeEnum.DEPOSIT);
+        assertEquals(transactions.get(1).getType(), TransactionTypeEnum.SWAP);
     }
 
     @Test
     public void testGetTransactions_InvalidAccount() {
         // nonexistent account should throw a CustomException
         assertThrows(CustomException.class, () -> accountService.getTransactions("nonexistent@example.com"));
+    }
+
+    @Test
+    void testDeposit_ShouldPerformDepositAndReturnTransaction() {
+        // Creating from account with USD Balance a deposit 50usd
+        String email = "deposit-customer@example.com";
+        String amountStr = "500";
+        BigDecimal amount = new BigDecimal(amountStr);
+        AccountResponseDto accountResponseDto = accountService.create(new AccountRequestDto(email));
+        CurrencyEnum currency = CurrencyEnum.USD;
+
+        accountService.createBalance(new CreateBalanceDto(email, currency));
+        Transaction transaction = accountService.deposit(new DepositDto(email, currency, amountStr));
+        AccountResponseDto account = accountService.find(email);
+
+        // check created account
+        assertEquals(amount, account.getBalances().get(currency));
+
+        // check deposit transaction created
+        assertNotNull(transaction);
+        assertEquals(TransactionTypeEnum.DEPOSIT, transaction.getType());
+        assertEquals(LocalDate.now(), transaction.getCreatedAt());
+        assertEquals(accountResponseDto.getEmail(), transaction.getFromAccount().getEmail());
+        assertEquals(currency, transaction.getFromCurrency());
+        assertEquals(currency, transaction.getToCurrency());
+        assertEquals(currency, transaction.getServiceCurrency());
+        assertEquals(amount, transaction.getFromAmount());
+        assertEquals(amount, transaction.getToAmount());
     }
 
     @Test

@@ -23,7 +23,6 @@ public class AccountController {
 
     @PostMapping("/create")
     public ResponseEntity createAccount(@RequestBody AccountRequestDto accountRequestDto) {
-        log.info("Getting account created: {}", accountRequestDto);
         try {
             AccountResponseDto out = accountService.create(accountRequestDto);
             return ResponseEntity.status(HttpStatus.CREATED).body(out);
@@ -35,8 +34,6 @@ public class AccountController {
 
     @PostMapping("/create-balance")
     public ResponseEntity createBalance(@RequestBody CreateBalanceDto createBalanceDTO) {
-        log.info("Create balance: {}", createBalanceDTO);
-
         try {
             AccountResponseDto out = accountService.createBalance(createBalanceDTO);
             return ResponseEntity.status(HttpStatus.CREATED).body(out);
@@ -47,9 +44,8 @@ public class AccountController {
 
     @PostMapping("/deposit")
     public ResponseEntity deposit(@RequestBody DepositDto depositDto) {
-        log.info("Depositing into account: {}", depositDto);
         try {
-            AccountResponseDto out = accountService.deposit(depositDto);
+            Transaction out = accountService.deposit(depositDto);
             return ResponseEntity.ok(out);
         } catch (Exception exception) {
             return ControllerExceptionsHandler.setResponseEntity(exception);
@@ -58,7 +54,6 @@ public class AccountController {
 
     @PostMapping("/send")
     public ResponseEntity sendFunds(@RequestBody SendDto sendDTO) {
-        log.info("Sending money: {}", sendDTO);
         try {
             Transaction out = accountService.send(sendDTO);
             return ResponseEntity.ok(out);
@@ -69,7 +64,6 @@ public class AccountController {
 
     @PostMapping("/swap")
     public ResponseEntity swapFunds(@RequestBody SwapDto swapDTO) {
-        log.info("Swapping funds: {}", swapDTO);
         try {
             Transaction out = accountService.swap(swapDTO);
             return ResponseEntity.ok(out);
@@ -83,7 +77,7 @@ public class AccountController {
     public ResponseEntity getAccount(@PathVariable String email) {
         try {
             AccountResponseDto out = accountService.find(email);
-            return ResponseEntity.status(HttpStatus.FOUND).body(out);
+            return ResponseEntity.ok(out);
         } catch (Exception exception) {
             return ControllerExceptionsHandler.setResponseEntity(exception);
         }
@@ -92,7 +86,6 @@ public class AccountController {
     @GetMapping("/{email}/transactions")
     @ResponseBody
     public ResponseEntity getAccountTransactions(@PathVariable String email) {
-        log.info("Getting customer transactions: {}", email);
         try {
             List<Transaction> out = accountService.getTransactions(email);
             return ResponseEntity.ok(out);

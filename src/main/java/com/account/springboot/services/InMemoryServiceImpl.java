@@ -52,7 +52,6 @@ public class InMemoryServiceImpl implements InMemoryService {
         if (!accounts.containsKey(email)) {
             throw new CustomException(ErrorCode.NO_SUCH_ACCOUNT);
         }
-        log.info("all transactions: {}", transactions);
         return transactions.stream()
                 .filter(tx -> tx.getFromAccount().getEmail().equals(email) || tx.getToAccount().getEmail().equals(email))
                 .collect(Collectors.toList());

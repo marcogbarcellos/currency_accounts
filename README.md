@@ -59,4 +59,10 @@ Also, for simplicity's sake I have create a simple [RatesService](src/main/java/
 
 ## Database - in-memory service
 
-Once again, for simplicity's sake I have create a simple [InMemoryService](src/main/java/com/account/springboot/services/InMemoryServiceImpl.java) that will store accounts and transactions in memory while the api is running. the 2 main [models](src/main/java/com/account/springboot/models) are the [Account](src/main/java/com/account/springboot/models/Account.java) and [Balance](src/main/java/com/account/springboot/models/Balance.java) models.
+Once again, for simplicity's sake I have create a simple [InMemoryService](src/main/java/com/account/springboot/services/InMemoryServiceImpl.java) that will store accounts and transactions in memory while the api is running. the 2 main [models](src/main/java/com/account/springboot/models) are: [Account](src/main/java/com/account/springboot/models/Account.java) and [Transaction](src/main/java/com/account/springboot/models/Transaction.java).
+
+- Account: Responsible to keep the general information of the customer's account and also keep the balances for all currencies.
+    - PS: If getting out of the MVP, it could make sense to create snapshots to keep track of the events where the user change its balances.
+- Transaction: Responsible to state when a user has done a transactions
+    - PS 1: If getting out of the MVP, it could make sense to have a transaction for each customer involved. for example a customer that will be receiving a "transfer" would have a `CREDIT` transaction related to him and the customer sending that "transfer" would have a `DEBIT` transaction. This would make it cleaner to not only improve performance but also keep track of how much money was in and/or out of each user and also the system.
+    - PS 2: It could make sense to keep a separate transaction everytime there is a fee to easily group fee transactions and easily identify how much is going to the platform. Maybe a platform [Account](src/main/java/com/account/springboot/models/Account.java) would also make sense.

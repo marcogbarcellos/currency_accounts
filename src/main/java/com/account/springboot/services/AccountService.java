@@ -19,7 +19,7 @@ public interface AccountService {
      * @param depositDto - dto with deposit information
      * @return Account with all "zeroed" balances
      */
-    AccountResponseDto deposit(DepositDto depositDto);
+    Transaction deposit(DepositDto depositDto);
 
     /**
      * Creates a new currency balance for a customer

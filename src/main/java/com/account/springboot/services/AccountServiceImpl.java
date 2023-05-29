@@ -43,19 +43,31 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountResponseDto deposit(DepositDto depositDto) {
-        log.info("Deposit info: {}", depositDto);
+    public Transaction deposit(DepositDto depositDto) {
         Account account = inMemoryService.getAccount(depositDto.getEmail());
-        account.updateBalance(depositDto.getCurrency(), new BigDecimal(depositDto.getAmount()));
+        BigDecimal bgAmount = new BigDecimal(depositDto.getAmount());
+        account.updateBalance(depositDto.getCurrency(), bgAmount);
         inMemoryService.upsertAccount(account.getEmail(), account);
-        return account.toDTO();
+        // creating a transaction and persisting it to the "in-memory" storage
+        Transaction newTransaction = Transaction.builder()
+                .fromAccount(account)
+                .toAccount(account)
+                .fromCurrency(depositDto.getCurrency())
+                .toCurrency(depositDto.getCurrency())
+                .serviceCurrency(depositDto.getCurrency())
+                .fromAmount(bgAmount)
+                .toAmount(bgAmount)
+                .serviceFeeAmount(new BigDecimal("0")) // let's consider the fee is zero for transfers between users
+                .type(TransactionTypeEnum.DEPOSIT)
+                .createdAt(LocalDate.now())
+                .build();
+        inMemoryService.addTransaction(newTransaction);
+        return newTransaction;
     }
 
     @Override
     public AccountResponseDto createBalance(CreateBalanceDto createBalanceDTO) {
-        log.info("new Balance DTO: {}", createBalanceDTO);
         Account account = inMemoryService.getAccount(createBalanceDTO.getEmail());
-        log.info("found Account: {}", account);
         if (account.getBalances().containsKey(createBalanceDTO.getCurrency())) {
             throw new CustomException(ErrorCode.BALANCE_ALREADY_EXISTS);
         }
@@ -75,9 +87,6 @@ public class AccountServiceImpl implements AccountService {
     public Transaction send(SendDto sendDTO) {
         Account sendingAccount = inMemoryService.getAccount(sendDTO.getFromEmail());
         Account receivingAccount = inMemoryService.getAccount(sendDTO.getToEmail());
-        log.info("sendingAccount: {}", sendingAccount);
-        log.info("receivingAccount: {}", receivingAccount);
-        log.info("sendDto: {}", sendDTO);
         BigDecimal bgAmount = new BigDecimal(sendDTO.getAmount());
         // decrease balance from the customer that's sending the funds
         sendingAccount.updateBalance(sendDTO.getCurrency(), bgAmount.multiply(new BigDecimal("-1")));
