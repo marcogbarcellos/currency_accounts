@@ -6,6 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
+//@OpenAPIDefinition
 public class Application {
 
     public static void main(String[] args) {

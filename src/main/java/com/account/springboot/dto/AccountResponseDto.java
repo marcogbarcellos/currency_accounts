@@ -14,7 +14,7 @@ import java.util.Map;
 @Builder
 @Getter
 @Setter
-public class AccountOutDto {
+public class AccountResponseDto {
 
     private String email;
     private Map<CurrencyEnum, BigDecimal> balances;

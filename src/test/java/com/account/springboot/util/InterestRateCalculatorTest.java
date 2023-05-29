@@ -21,7 +21,7 @@ class InterestRateCalculatorTest {
 
     @Test
     public void testGetMonthlyInterest_WithOlderAccount_ReturnsFullMonthlyInterest() {
-        // Get an account older than one month..
+        // Get an account older than one month
         LocalDate accountOpeningDate = LocalDate.now().minusMonths(2);
         BigDecimal yearlyInterestRate = new BigDecimal("0.05");
 

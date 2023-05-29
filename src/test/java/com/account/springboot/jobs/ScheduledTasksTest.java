@@ -1,7 +1,7 @@
 package com.account.springboot.jobs;
 
 
-import com.account.springboot.dto.AccountInDto;
+import com.account.springboot.dto.AccountRequestDto;
 import com.account.springboot.models.Account;
 import com.account.springboot.models.Balance;
 import com.account.springboot.models.CurrencyEnum;
@@ -55,7 +55,7 @@ public class ScheduledTasksTest {
     public void testPayoutInterestRates_WithSingleAccount_CalculatesInterestAndUpdatesAccount() {
         // Creating account with USD balance
         String email = "roger@me.com";
-        Account account = new Account(new AccountInDto(email));
+        Account account = new Account(new AccountRequestDto(email));
         account.addBalance(CurrencyEnum.USD, new BigDecimal("0.05"));
         account.updateBalance(CurrencyEnum.USD, new BigDecimal("15"));
         Map<String, Account> accounts = new HashMap<>();
@@ -78,12 +78,12 @@ public class ScheduledTasksTest {
         Map<String, Account> accounts = new HashMap<>();
         // Creating account1 with USD balance
         String email1 = "account1@me.com";
-        Account account1 = new Account(new AccountInDto(email1));
+        Account account1 = new Account(new AccountRequestDto(email1));
         account1.addBalance(CurrencyEnum.USD, new BigDecimal("0.05"));
         account1.updateBalance(CurrencyEnum.USD, new BigDecimal("15"));
         // Creating account1 with CAD balance
         String email2 = "account2@me.com";
-        Account account2 = new Account(new AccountInDto(email2));
+        Account account2 = new Account(new AccountRequestDto(email2));
         account2.addBalance(CurrencyEnum.CAD, new BigDecimal("0.05"));
         account2.updateBalance(CurrencyEnum.CAD, new BigDecimal("15"));
         // Adding both accounts to main accounts
@@ -107,11 +107,11 @@ public class ScheduledTasksTest {
         Map<String, Account> accounts = new HashMap<>();
         // Creating account1 with USD balance
         String email1 = "account1@me.com";
-        Account account1 = new Account(new AccountInDto(email1));
+        Account account1 = new Account(new AccountRequestDto(email1));
         account1.addBalance(CurrencyEnum.USD, new BigDecimal("0.05"));
         // Creating account1 with CAD balance
         String email2 = "account2@me.com";
-        Account account2 = new Account(new AccountInDto(email2));
+        Account account2 = new Account(new AccountRequestDto(email2));
         account2.addBalance(CurrencyEnum.CAD, new BigDecimal("0.05"));
 
         // Adding both accounts to main accounts

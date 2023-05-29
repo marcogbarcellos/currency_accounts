@@ -53,10 +53,9 @@ public class InMemoryServiceImpl implements InMemoryService {
             throw new CustomException(ErrorCode.NO_SUCH_ACCOUNT);
         }
         log.info("all transactions: {}", transactions);
-        List<Transaction> accountTransactions = transactions.stream()
+        return transactions.stream()
                 .filter(tx -> tx.getFromAccount().getEmail().equals(email) || tx.getToAccount().getEmail().equals(email))
                 .collect(Collectors.toList());
-        return accountTransactions;
     }
 
     @Override

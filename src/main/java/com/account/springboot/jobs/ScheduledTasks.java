@@ -25,9 +25,7 @@ public class ScheduledTasks {
     @Autowired
     private InterestRateCalculator interestRateCalculator;
 
-        @Scheduled(cron = "0 * * * * *") // Run every minute
-
-//    @Scheduled(cron = "0 0 0 1 * *") // Run at midnight on the first day of each month
+    @Scheduled(cron = "0 0 0 1 * *") // Run at midnight on the first day of each month
     public void payoutInterestRates() {
         Map<String, Account> accounts  = inMemoryService.getAllAccounts();
         log.info("Running interest rates job");

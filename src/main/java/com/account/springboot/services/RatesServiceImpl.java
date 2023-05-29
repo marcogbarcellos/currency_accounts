@@ -1,7 +1,7 @@
 package com.account.springboot.services;
 
-import com.account.springboot.dto.ConversionRateInDto;
-import com.account.springboot.dto.ConversionRateOutDto;
+import com.account.springboot.dto.ExchangeRateRequestDto;
+import com.account.springboot.dto.ExchangeRateResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +19,11 @@ public class RatesServiceImpl implements RatesService {
 
     /**
      * When there is no entry for particular day the method checks what is actual rate with date before the requested date
-     *@param conversionRateInDto  requested conversion rate dto with desired currency
+     *@param exchangeRateRequestDto  requested conversion rate dto with desired currency
      * @return returns conversion rate with current date
      */
     @Override
-    public ConversionRateOutDto getConversionRate(ConversionRateInDto conversionRateInDto) {
+    public ExchangeRateResponseDto getConversionRate(ExchangeRateRequestDto exchangeRateRequestDto) {
         Map<String, String> exchangeRates = new HashMap<String,String>(
                 Map.of(
                         "CADUSD", "0.73",
@@ -34,11 +34,11 @@ public class RatesServiceImpl implements RatesService {
                         "EURUSD", "1.07"
                 )
         );
-        String rate = exchangeRates.get(conversionRateInDto.getSourceCurrency().toString()+conversionRateInDto.getTargetCurrency().toString());
-        return ConversionRateOutDto
+        String rate = exchangeRates.get(exchangeRateRequestDto.getSourceCurrency().toString()+ exchangeRateRequestDto.getTargetCurrency().toString());
+        return ExchangeRateResponseDto
                 .builder()
                 .rate(rate)
-                .targetCurrency(conversionRateInDto.getTargetCurrency())
+                .targetCurrency(exchangeRateRequestDto.getTargetCurrency())
                 .date(new Date().toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDate())

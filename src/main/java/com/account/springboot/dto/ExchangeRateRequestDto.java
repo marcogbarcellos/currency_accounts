@@ -9,7 +9,7 @@ import lombok.*;
 @Getter
 @Setter
 @AllArgsConstructor
-public class ConversionRateInDto {
+public class ExchangeRateRequestDto {
 
     @NotEmpty
     private CurrencyEnum sourceCurrency;

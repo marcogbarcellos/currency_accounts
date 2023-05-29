@@ -4,6 +4,7 @@ package com.account.springboot.exceptions;
 import lombok.Getter;
 
 @Getter
+//@ResponseStatus(code = HttpStatus.NOT_FOUND, reason = "video not found")
 public class CustomException extends RuntimeException {
     private final ErrorCode code;
     private final String details;

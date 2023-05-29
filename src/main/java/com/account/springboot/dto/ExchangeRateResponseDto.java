@@ -13,7 +13,7 @@ import java.time.LocalDate;
 @Builder
 @Getter
 @Setter
-public class ConversionRateOutDto {
+public class ExchangeRateResponseDto {
     private CurrencyEnum targetCurrency;
     private String rate;
 

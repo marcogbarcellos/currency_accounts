@@ -1,7 +1,7 @@
 package com.account.springboot.models;
 
-import com.account.springboot.dto.AccountInDto;
-import com.account.springboot.dto.AccountOutDto;
+import com.account.springboot.dto.AccountRequestDto;
+import com.account.springboot.dto.AccountResponseDto;
 import com.account.springboot.exceptions.CustomException;
 import com.account.springboot.exceptions.ErrorCode;
 import lombok.Data;
@@ -24,7 +24,7 @@ public class Account {
     private LocalDate createdAt;
     private LocalDate updatedAt;
 
-    public Account(AccountInDto dto) {
+    public Account(AccountRequestDto dto) {
         this.balances = new ConcurrentHashMap<>();
         this.email = dto.getEmail();
         LocalDate now = LocalDate.now();
@@ -33,11 +33,11 @@ public class Account {
 
     }
 
-    public AccountOutDto toDTO() {
+    public AccountResponseDto toDTO() {
         Map<CurrencyEnum, BigDecimal> dtoBalances = balances.entrySet()
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getAmount()));
-        return AccountOutDto.builder()
+        return AccountResponseDto.builder()
                 .email(this.email)
                 .balances(dtoBalances)
                 .createdAt(createdAt)

@@ -2,7 +2,6 @@ package com.account.springboot.services;
 
 import com.account.springboot.dto.*;
 import com.account.springboot.exceptions.CustomException;
-import com.account.springboot.models.Account;
 import com.account.springboot.models.CurrencyEnum;
 import com.account.springboot.models.Transaction;
 import com.account.springboot.models.TransactionTypeEnum;
@@ -18,9 +17,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 
-// This Test class will NOT mock the services to entertain testing both InMemoryService and AccountService due to a time constraint but we would ideally also create tests for the InMemoryService and separate the logic here
+// This Test class will NOT mock the services to entertain testing both InMemoryService and AccountService due to a time constraint, but we would ideally also create tests for the InMemoryService and separate the logic here
 @SpringBootTest
 @TestPropertySource(locations = "classpath:application-test.properties")
 class AccountServiceImplTest {
@@ -36,8 +34,8 @@ class AccountServiceImplTest {
 
     @Test
     public void testCreateAccount() {
-        AccountInDto accountDto = new AccountInDto("account1@me.com");
-        AccountOutDto result = accountService.create(accountDto);
+        AccountRequestDto accountDto = new AccountRequestDto("account1@me.com");
+        AccountResponseDto result = accountService.create(accountDto);
 
         // make sure account is created as expected
         assertNotNull(result);
@@ -46,8 +44,8 @@ class AccountServiceImplTest {
 
     @Test
     public void testCreateAccount_ExistingAccount() {
-        AccountInDto accountDto = new AccountInDto("john@me.com");
-        AccountOutDto result = accountService.create(accountDto);
+        AccountRequestDto accountDto = new AccountRequestDto("john@me.com");
+        AccountResponseDto result = accountService.create(accountDto);
 
         // make sure account is created as expected
         assertNotNull(result);
@@ -61,12 +59,12 @@ class AccountServiceImplTest {
     public void testCreateBalance() {
         // first create account
         String email = "balance@me.com";
-        AccountInDto accountDto = new AccountInDto(email);
-        AccountOutDto accountOutDto = accountService.create(accountDto);
+        AccountRequestDto accountDto = new AccountRequestDto(email);
+        accountService.create(accountDto);
         // build dto
         CreateBalanceDto createBalanceDTO = new CreateBalanceDto(email, CurrencyEnum.USD);
         // create balance
-        AccountOutDto result = accountService.createBalance(createBalanceDTO);
+        AccountResponseDto result = accountService.createBalance(createBalanceDTO);
 
         // make sure balance is created as expected
         assertNotNull(result);
@@ -78,12 +76,12 @@ class AccountServiceImplTest {
     public void testCreateBalance_ExistingBalance() {
         // first create account
         String email = "existingBalance@me.com";
-        AccountInDto accountDto = new AccountInDto(email);
-        AccountOutDto accountOutDto = accountService.create(accountDto);
+        AccountRequestDto accountDto = new AccountRequestDto(email);
+        accountService.create(accountDto);
         // build dto
         CreateBalanceDto createBalanceDTO = new CreateBalanceDto(email, CurrencyEnum.USD);
         // create balance
-        AccountOutDto result = accountService.createBalance(createBalanceDTO);
+        AccountResponseDto result = accountService.createBalance(createBalanceDTO);
 
         // make sure balance is created as expected
         assertNotNull(result);
@@ -98,11 +96,11 @@ class AccountServiceImplTest {
     public void testFindAccount_ExistingAccount() {
         // first create account
         String email = "existing@me.com";
-        AccountInDto accountDto = new AccountInDto(email);
-        AccountOutDto accountOutDto = accountService.create(accountDto);
+        AccountRequestDto accountDto = new AccountRequestDto(email);
+        accountService.create(accountDto);
 
         // find created account
-        AccountOutDto result = accountService.find(email);
+        AccountResponseDto result = accountService.find(email);
 
         // check if account was found
         assertNotNull(result);
@@ -120,8 +118,8 @@ class AccountServiceImplTest {
     public void testGetTransactions_Success() {
         // Creating test data
         String email = "txs@me.com";
-        AccountInDto accountDto = new AccountInDto(email);
-        AccountOutDto accountOutDto = accountService.create(accountDto);
+        AccountRequestDto accountDto = new AccountRequestDto(email);
+        accountService.create(accountDto);
         // Creating USD Balance
         CreateBalanceDto createBalanceDTO = new CreateBalanceDto(email, CurrencyEnum.USD);
         accountService.createBalance(createBalanceDTO);
@@ -149,12 +147,12 @@ class AccountServiceImplTest {
         // Creating from account with USD Balance a deposit 50usd
         String fromEmail = "sender-sucess@example.com";
         CurrencyEnum currency = CurrencyEnum.USD;
-        accountService.create(new AccountInDto(fromEmail));
+        accountService.create(new AccountRequestDto(fromEmail));
         accountService.createBalance(new CreateBalanceDto(fromEmail, currency));
         accountService.deposit(new DepositDto(fromEmail, currency, "500"));
         // Creating to account with USD Balance
         String toEmail = "receiver-sucess@example.com";
-        accountService.create(new AccountInDto(toEmail));
+        accountService.create(new AccountRequestDto(toEmail));
         accountService.createBalance(new CreateBalanceDto(toEmail, currency));
         accountService.deposit(new DepositDto(toEmail, currency, "500"));
         // Setting up send amount
@@ -164,8 +162,8 @@ class AccountServiceImplTest {
         SendDto sendDTO = new SendDto(fromEmail, toEmail, currency, amount.toString());
         Transaction transaction = accountService.send(sendDTO);
 
-        AccountOutDto sendingAccount = accountService.find(fromEmail);
-        AccountOutDto receivingAccount = accountService.find(toEmail);
+        AccountResponseDto sendingAccount = accountService.find(fromEmail);
+        AccountResponseDto receivingAccount = accountService.find(toEmail);
         // Check if transactions exist
         assertNotNull(transaction);
         assertEquals(TransactionTypeEnum.TRANSFER, transaction.getType());
@@ -187,12 +185,12 @@ class AccountServiceImplTest {
         // Creating from account with USD Balance a deposit 50usd
         String fromEmail = "sender-not-complete@example.com";
         CurrencyEnum currency = CurrencyEnum.USD;
-        accountService.create(new AccountInDto(fromEmail));
+        accountService.create(new AccountRequestDto(fromEmail));
         accountService.createBalance(new CreateBalanceDto(fromEmail, currency));
         accountService.deposit(new DepositDto(fromEmail, currency, "500"));
         // Creating to account with USD Balance
         String toEmail = "receiver-not-complete@example.com";
-        accountService.create(new AccountInDto(toEmail));
+        accountService.create(new AccountRequestDto(toEmail));
         accountService.createBalance(new CreateBalanceDto(toEmail, currency));
         accountService.deposit(new DepositDto(toEmail, currency, "500"));
         // Setting up send amount higher than sender's balance
@@ -208,13 +206,13 @@ class AccountServiceImplTest {
         // Creating from account with USD Balance a deposit 50usd
         String fromEmail = "sender-without-currency-balance@example.com";
         CurrencyEnum currency = CurrencyEnum.USD;
-        accountService.create(new AccountInDto(fromEmail));
+        accountService.create(new AccountRequestDto(fromEmail));
         accountService.createBalance(new CreateBalanceDto(fromEmail, currency));
         accountService.deposit(new DepositDto(fromEmail, currency, "500"));
         // Creating to account with USD Balance
         String toEmail = "receiver-without-currency-balance@example.com";
         CurrencyEnum currencyNotInBalance = CurrencyEnum.CAD;
-        accountService.create(new AccountInDto(toEmail));
+        accountService.create(new AccountRequestDto(toEmail));
         accountService.createBalance(new CreateBalanceDto(toEmail, currencyNotInBalance));
         // Setting up send amount higher than sender's balance
         BigDecimal amount = new BigDecimal("50.00");
@@ -229,7 +227,7 @@ class AccountServiceImplTest {
         // Creating from account with USD Balance a deposit 50usd
         String fromEmail = "not-found@example.com";
         CurrencyEnum currency = CurrencyEnum.USD;
-        accountService.create(new AccountInDto(fromEmail));
+        accountService.create(new AccountRequestDto(fromEmail));
         accountService.createBalance(new CreateBalanceDto(fromEmail, currency));
         accountService.deposit(new DepositDto(fromEmail, currency, "500"));
         // Setting up send amount higher than sender's balance
@@ -244,7 +242,7 @@ class AccountServiceImplTest {
     void testSwap_ShouldPerformSwapAndReturnTransaction() {
         // Creating from account with USD Balance a deposit 50usd
         String email = "sender@example.com";
-        AccountOutDto accountOutDto = accountService.create(new AccountInDto(email));
+        AccountResponseDto accountResponseDto = accountService.create(new AccountRequestDto(email));
         CurrencyEnum fromCurrency = CurrencyEnum.USD;
         accountService.createBalance(new CreateBalanceDto(email, fromCurrency));
         accountService.deposit(new DepositDto(email, fromCurrency, "500"));
@@ -256,13 +254,13 @@ class AccountServiceImplTest {
         // Call swap method
         Transaction transaction = accountService.swap(new SwapDto(email, fromCurrency, toCurrency, amount.toString()));
         // get rates
-        ConversionRateOutDto conversionRateOutDto = ratesService.getConversionRate(new ConversionRateInDto(fromCurrency, toCurrency));
+        ExchangeRateResponseDto exchangeRateResponseDto = ratesService.getConversionRate(new ExchangeRateRequestDto(fromCurrency, toCurrency));
         // checks
-        // Assert
+
         assertNotNull(transaction);
         assertEquals(TransactionTypeEnum.SWAP, transaction.getType());
         assertEquals(LocalDate.now(), transaction.getCreatedAt());
-        assertEquals(accountOutDto.getEmail(), transaction.getFromAccount().getEmail());
+        assertEquals(accountResponseDto.getEmail(), transaction.getFromAccount().getEmail());
         assertEquals(fromCurrency, transaction.getFromCurrency());
         assertEquals(toCurrency, transaction.getToCurrency());
         assertEquals(fromCurrency, transaction.getServiceCurrency());
@@ -273,7 +271,7 @@ class AccountServiceImplTest {
         // remaining amount (on FROM currency)
         BigDecimal remainingAmountToBeExchanged = amount.subtract(feeAmount);
         // receivingAmount is the actual amount the receiver will get
-        BigDecimal receivingAmount = remainingAmountToBeExchanged.multiply(new BigDecimal(conversionRateOutDto.getRate()));
+        BigDecimal receivingAmount = remainingAmountToBeExchanged.multiply(new BigDecimal(exchangeRateResponseDto.getRate()));
         assertEquals(receivingAmount, transaction.getToAmount());
     }
 
@@ -292,7 +290,7 @@ class AccountServiceImplTest {
     void testSwap_ShouldThrowErrorIfFundsAreInsufficient() {
         // Creating from account with USD Balance a deposit 50usd
         String email = "sender-insufficient@example.com";
-        accountService.create(new AccountInDto(email));
+        accountService.create(new AccountRequestDto(email));
         CurrencyEnum fromCurrency = CurrencyEnum.USD;
         accountService.createBalance(new CreateBalanceDto(email, fromCurrency));
         accountService.deposit(new DepositDto(email, fromCurrency, "500"));

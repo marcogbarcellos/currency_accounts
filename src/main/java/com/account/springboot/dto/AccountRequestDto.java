@@ -9,7 +9,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountInDto {
+public class AccountRequestDto {
 
     @NotEmpty
     @Email

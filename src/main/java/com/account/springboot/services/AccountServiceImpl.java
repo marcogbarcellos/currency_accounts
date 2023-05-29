@@ -30,12 +30,12 @@ public class AccountServiceImpl implements AccountService {
     @Value("${service.fee}")
     private String SERVICE_FEE;
 
-    // Yearly interested rates to be paid to the customer on all balances (for simplicity sake we will consider always the same for all currencies)
+    // Yearly interested rates to be paid to the customer on all balances (for simplicity's sake we will consider always the same for all currencies)
     @Value("${yearly.interest}")
     private String YEARLY_INTEREST;
 
     @Override
-    public AccountOutDto create(AccountInDto accountDto) {
+    public AccountResponseDto create(AccountRequestDto accountDto) {
         Account newAccount = new Account(accountDto);
         inMemoryService.addAccount(newAccount.getEmail(), newAccount);
         return newAccount.toDTO();
@@ -43,7 +43,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountOutDto deposit(DepositDto depositDto) {
+    public AccountResponseDto deposit(DepositDto depositDto) {
         log.info("Deposit info: {}", depositDto);
         Account account = inMemoryService.getAccount(depositDto.getEmail());
         account.updateBalance(depositDto.getCurrency(), new BigDecimal(depositDto.getAmount()));
@@ -52,7 +52,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public AccountOutDto createBalance(CreateBalanceDto createBalanceDTO) {
+    public AccountResponseDto createBalance(CreateBalanceDto createBalanceDTO) {
         log.info("new Balance DTO: {}", createBalanceDTO);
         Account account = inMemoryService.getAccount(createBalanceDTO.getEmail());
         log.info("found Account: {}", account);
@@ -66,7 +66,7 @@ public class AccountServiceImpl implements AccountService {
 
 
     @Override
-    public AccountOutDto find(String email) {
+    public AccountResponseDto find(String email) {
         Account account = inMemoryService.getAccount(email);
         return account.toDTO();
     }
@@ -113,8 +113,8 @@ public class AccountServiceImpl implements AccountService {
         // thus the receiving percentage would be 100% minus the service fee %.
         BigDecimal receivingPercentage = new BigDecimal(1).subtract(serviceFeePercentage);
         // get the exchange rate given the source and target currencies
-        ConversionRateOutDto exchangeRateDto = ratesService.getConversionRate(
-                ConversionRateInDto.builder()
+        ExchangeRateResponseDto exchangeRateDto = ratesService.getConversionRate(
+                ExchangeRateRequestDto.builder()
                         .targetCurrency(swapDTO.getTargetCurrency())
                         .sourceCurrency(swapDTO.getSourceCurrency()).build()
         );
